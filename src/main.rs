@@ -1,5 +1,5 @@
 #![feature(hash_set_entry)]
-use std::{fs, io::BufReader, error::Error, path::Path, collections::HashSet, hash::Hash};
+use std::{fs, io::BufReader, error::Error, path::Path, collections::HashSet, hash::Hash, time::Instant};
 use serde_derive::{Deserialize, Serialize};
 
 const MANIFEST_PATH: &'static str = r#"D:\DragaliaLostAssets\DragaliaManifests-master\Android"#;
@@ -133,7 +133,7 @@ fn build_manifest(manifest_path: &Path, manifest_type: &str) -> Manifest {
 }
 
 fn main() {
-    println!("Starting");
+    let start = Instant::now();
     let manifest_path = Path::new(MANIFEST_PATH);
 
     let all_manifest_types = vec![
@@ -153,4 +153,6 @@ fn main() {
             Ok(_) => ()
         };
     }
+    
+    println!("Done after {:.2?}", start.elapsed());
 }
