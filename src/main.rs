@@ -1,5 +1,5 @@
 #![feature(hash_set_entry)]
-use std::{fs, io::BufReader, error::Error, path::Path, collections::HashSet, hash::Hash, time::Instant};
+use std::{fs, io::BufReader, error::Error, path::Path, collections::HashSet, hash::Hash, time::Instant, thread};
 use serde_derive::{Deserialize, Serialize};
 
 const MANIFEST_PATH: &'static str = r#"D:\DragaliaLostAssets\DragaliaManifests-master\Android"#;
@@ -136,7 +136,7 @@ fn main() {
     let start = Instant::now();
     let manifest_path = Path::new(MANIFEST_PATH);
 
-    let all_manifest_types = vec![
+    let all_manifest_types = [
         "assetbundle.manifest.json", 
         "assetbundle.en_us.manifest.json", 
         "assetbundle.en_eu.manifest.json", 
@@ -144,15 +144,22 @@ fn main() {
         "assetbundle.zh_cn.manifest.json"
     ];
 
-    for manifest_type in all_manifest_types {
-        println!("Processing manifests of type {}", manifest_type);
-        let manifest = build_manifest(manifest_path, manifest_type);
-        let json = serde_json::to_string_pretty(&manifest).unwrap();
-        match fs::write(Path::new(manifest_type), &json) {
-            Err(why) => panic!("Failed to write result to path {}: {}", manifest_type, why),
-            Ok(_) => ()
-        };
-    }
-    
+
+    thread::scope(|s| {
+        let mut handles = Vec::new();
+
+        for manifest_type in all_manifest_types {
+            handles.push(s.spawn(move || {
+                println!("Processing manifests of type {}", manifest_type);
+                let manifest = build_manifest(manifest_path, manifest_type);
+                let json = serde_json::to_string_pretty(&manifest).unwrap();
+                match fs::write(Path::new(manifest_type), &json) {
+                    Err(why) => panic!("Failed to write result to path {}: {}", manifest_type, why),
+                    Ok(_) => ()
+                };
+            }))
+        }
+    });
+
     println!("Done after {:.2?}", start.elapsed());
 }
