@@ -102,8 +102,6 @@ fn build_manifest(manifest_path: &Path, manifest_type: &str) -> Manifest {
 
     for (i, entry) in folders.enumerate() {
 
-        println!("{} / {}", i, total_folders);
-
         let json_path = entry.unwrap().path().join(manifest_type);
         let manifest = match deserialize_file(&json_path) {
             Err(why) => panic!("Failed to deserialize JSON file {}: {}", json_path.display(), why),
@@ -133,7 +131,7 @@ fn build_manifest(manifest_path: &Path, manifest_type: &str) -> Manifest {
 }
 
 fn main() {
-    let start = Instant::now();
+    let start_all = Instant::now();
     let manifest_path = Path::new(MANIFEST_PATH);
 
     let all_manifest_types = [
@@ -150,6 +148,7 @@ fn main() {
 
         for manifest_type in all_manifest_types {
             handles.push(s.spawn(move || {
+                let start = Instant::now();
                 println!("Processing manifests of type {}", manifest_type);
                 let manifest = build_manifest(manifest_path, manifest_type);
                 let json = serde_json::to_string_pretty(&manifest).unwrap();
@@ -157,9 +156,10 @@ fn main() {
                     Err(why) => panic!("Failed to write result to path {}: {}", manifest_type, why),
                     Ok(_) => ()
                 };
+                println!("Thread {} completed after {:2?}", manifest_type, start.elapsed())
             }))
         }
     });
 
-    println!("Done after {:.2?}", start.elapsed());
+    println!("Program finished after {:.2?}", start_all.elapsed());
 }
