@@ -1,0 +1,3 @@
+[submodule "DragaliaManifests"]
+	path = DragaliaManifests
+	url = https://github.com/DragaliaLostRevival/DragaliaManifests

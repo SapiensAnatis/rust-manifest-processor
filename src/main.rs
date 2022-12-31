@@ -2,8 +2,6 @@
 use std::{fs, io::BufReader, error::Error, path::Path, collections::HashSet, hash::Hash, time::Instant};
 use serde_derive::{Deserialize, Serialize};
 
-const MANIFEST_PATH: &'static str = r#"D:\DragaliaLostAssets\DragaliaManifests-master\Android"#;
-
 #[derive(Serialize, Deserialize)]
 struct Asset {
     name: String,
@@ -109,7 +107,7 @@ fn build_manifest(manifest_path: &Path, manifest_type: &str) -> Manifest {
         };
 
         for category in manifest.categories {
-            let mut result_category = result.categories
+            let result_category = result.categories
                 .iter_mut()
                 .find(|c| { 
                     c.name == category.name 
@@ -132,7 +130,7 @@ fn build_manifest(manifest_path: &Path, manifest_type: &str) -> Manifest {
 
 fn main() {
     let start_all = Instant::now();
-    let manifest_path = Path::new(MANIFEST_PATH);
+    let manifest_path = Path::new("DragaliaManifests/Android");
 
     let all_manifest_types = vec![
         "assetbundle.manifest.json", 
